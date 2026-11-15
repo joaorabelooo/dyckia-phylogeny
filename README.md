@@ -1,12 +1,12 @@
 # Dyckia phylogeny: custom analysis scripts
 
-> **AI disclosure:** This repository was generated and organized with assistance from OpenAI Codex. The custom scripts were developed with AI assistance during the research workflow. Inclusion here does not imply independent software validation or independent confirmation of biological conclusions.
+> **AI disclosure:** This repository was generated and organized with assistance from OpenAI Codex. The custom scripts and documentation were developed with AI assistance during the research workflow.
 
 Custom scripts supporting GBS-based phylogenetic analyses of *Dyckia* and sampled *Encholirium* lineages, with *Deuterocohnia meziana* as the outgroup.
 
 ## Scope and publication status
 
-This initial deposit contains the complete SNP-spacing script and final-tree audit script available locally. Additional analysis scripts will be deposited after the complete versions actually used on the cluster have been retrieved. This is not yet a complete executable pipeline.
+This repository documents analysis from an existing genotype-masked VCF through SNP filtering, alignment preparation, ML and SVDquartets inference, and comparison of the final trees. It includes the complete converter and executors retrieved from the cluster, the SNP-spacing script, and the final-tree audit. The original project paths are preserved, so paths must be adapted to another installation. Input VCFs, sample lists, third-party software, and inferred trees must be supplied separately.
 
 Read mapping and variant calling are outside the scope of this repository. Raw reads, genotypes, and sampling metadata are not included in this deposit.
 
@@ -55,10 +55,60 @@ Support criteria used for comparisons:
 
 Absence of an exact split is not treated as bootstrap zero. Different support statistics remain distinct measurements.
 
-## Further scripts awaiting retrieval
+## Converter and inference executors
 
-- Complete VCF-to-IUPAC FASTA converter used in the analysis.
-- Final VCF-subsetting and filtering procedure, beginning with the existing genotype-masked VCF.
-- Final ML/SVD executors and the scripts they invoke.
+| File | Purpose and provenance |
+| --- | --- |
+| `16_vcf_to_iupac_fasta.py` | Original cluster copy. Converts biallelic SNP genotypes into IUPAC-coded FASTA, removes constant-compatible sites, and writes alignment summaries and missingness per accession. |
+| `17_run_main208_ml.sh` | Original cluster copy. Template used by the final executor to generate its 202-accession ML launcher; not a separate final analysis. |
+| `25_run_svdq_bootstrap100.sh` | Previously inspected original SVD template. Applying the substitutions in `run_final202.sh` reproduces the downloaded final SVD executor, apart from trailing whitespace. |
+| `run_final202.sh` | Original cluster copy. Validates the final input, prepares ML and SVD matrices, adapts the two templates, and runs all three analyses. |
+| `run_svd.sh` | Original generated executor downloaded from the final cluster run; included to document the actual PAUP commands. |
+| `PROVENANCE.json` | Source records and SHA256 hashes of the deposited analysis scripts. |
 
-These are not represented by reconstructed or truncated substitutes in this initial deposit.
+Python scripts use the standard library. Execution of the inference workflow additionally requires Bash, BCFtools (including the `fill-tags` plugin for filtering), IQ-TREE, PAUP*, vcf2phylip, GNU time at `/usr/bin/time`, and standard Unix utilities. The repository does not redistribute third-party tools.
+
+Example converter invocation:
+
+```bash
+python 16_vcf_to_iupac_fasta.py filtered.vcf.gz alignment.fasta alignment_summary.tsv alignment_missingness.tsv
+```
+
+The converter retains a site only if the intersection of nucleotide states compatible with all nonmissing IUPAC calls is empty. Missing genotypes are encoded as `N`. This implements removal of sites compatible with a constant nucleotide state before using ascertainment-bias correction.
+
+The ML template uses `-m MFP+ASC -B 1000 --alrt 1000 --bnni -T 16 --seed 20261007`. The final data selected GTR+F+ASC+R5. The SVD launcher evaluates all quartets, uses QFM, distributes ambiguous states across compatible nucleotides, and runs 100 standard bootstrap replicates with 16 threads. Both SNP selection and PAUP use seed 20261021 for 100 bp and 20261020 for 10 kb.
+
+## Final VCF filtering protocol
+
+The following commands document the validated filtering procedure. They are not variant-calling commands and start with the existing biallelic, genotype-masked VCF. Genotype masking has already been performed on that input.
+
+```bash
+INPUT_VCF=dyckia_210_samples.biallelic_snps.gtmasked.vcf.gz
+KEEP=samples_final_202.txt
+OUTPUT_VCF=dyckia_final202.qual30.miss10.dpmax17888.mq40.mac2.vcf.gz
+
+set -euo pipefail
+bcftools view -S "$KEEP" -Ou "$INPUT_VCF" |
+    bcftools +fill-tags -Ou -- -t AC,AN,AF,MAF,F_MISSING |
+    bcftools view -i 'QUAL>=30 && INFO/F_MISSING<=0.10 && INFO/DP<=17888 && INFO/MQ>=40' -Ou |
+    bcftools view -c 2:minor -Oz -o "$OUTPUT_VCF"
+bcftools index "$OUTPUT_VCF"
+```
+
+Allele-count and missingness tags are recalculated after selecting accessions. Site-level `INFO/DP` and `INFO/MQ` are inherited from the existing input; this procedure does not recalculate them from alignments. The documented final dataset contained 202 accessions and 95,059 variants.
+
+## Running the original workflow
+
+1. Supply the filtered VCF and the final accession list. The list must match the sample names in the VCF.
+2. Place `16_vcf_to_iupac_fasta.py`, `17_run_main208_ml.sh`, `18_random_min_distance_sites.py`, and `25_run_svdq_bootstrap100.sh` in the project's `scripts/` directory.
+3. Edit `PROJECT` in the executors and the input `VCF`, `KEEP`, and third-party converter path in `run_final202.sh`. The original 202-sample and 95,059-variant assertions are intentionally retained.
+4. Create a run directory and execute the launcher, for example:
+
+```bash
+mkdir -p /path/to/project/reproduced_final202
+bash run_final202.sh /path/to/project/reproduced_final202
+```
+
+5. Edit `PROJECT` and `RUN` in `audit_final202.py` to match the project and resulting run, supply its expected metadata files, and run the audit.
+
+`run_final202.sh` generates its own `run_ml.sh` and `run_svd.sh` from the templates. The separately deposited `run_svd.sh` records the historical final run and contains that run's absolute directory. The scripts are archival research executors, not a path-independent package.

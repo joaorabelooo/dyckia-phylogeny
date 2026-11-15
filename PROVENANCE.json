@@ -1,0 +1,37 @@
+[
+  {
+    "file": "16_vcf_to_iupac_fasta.py",
+    "source": "Cluster archive: scripts/16_vcf_to_iupac_fasta.py",
+    "sha256": "9c99486b9e92d5551fbc3fda9d94a7e2b43a68199fe5b35c076a68e4086abd96"
+  },
+  {
+    "file": "17_run_main208_ml.sh",
+    "source": "Cluster archive: scripts/17_run_main208_ml.sh",
+    "sha256": "bd1664c2b9038123493fc5a88d9fc2e7ec2db7e5ee9b7f8251d7e83f3c94f5d6"
+  },
+  {
+    "file": "run_final202.sh",
+    "source": "Cluster archive: final202_trees.2jgge2/run_final202.sh",
+    "sha256": "8050c142c60bb0b93e37224f1ef0eb3473a363d743a9057043090d510fbae80a"
+  },
+  {
+    "file": "run_svd.sh",
+    "source": "Cluster archive: final202_trees.2jgge2/run_svd.sh",
+    "sha256": "4507573b80036a5587c94cba574dfcddd7ce20a2526dde6eef060f5283ea6cb1"
+  },
+  {
+    "file": "25_run_svdq_bootstrap100.sh",
+    "source": "Previously inspected cluster script pasted in conversation; adapting with run_final202.sh reproduces downloaded run_svd.sh exactly except trailing whitespace.",
+    "sha256": "7a6c6d84ae504720cf560a75b488237df8f29a07a7a248ba9009abe3d957cbd6"
+  },
+  {
+    "file": "18_random_min_distance_sites.py",
+    "source": "Previously inspected project script",
+    "sha256": "75755b5c3fb53fed9bafdd6a85ac758fe889418f33b2e5fef510f3ab7b741665"
+  },
+  {
+    "file": "audit_final202.py",
+    "source": "Previously inspected project script",
+    "sha256": "174a0f09104dbaa6dbd9ff47a7f63729847a910bfa1e40de7c8401f25e621d72"
+  }
+]
