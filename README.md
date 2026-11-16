@@ -8,7 +8,14 @@ Custom scripts supporting GBS-based phylogenetic analyses of *Dyckia* and sample
 
 This repository documents analysis from an existing genotype-masked VCF through SNP filtering, alignment preparation, ML and SVDquartets inference, and comparison of the final trees. It includes the complete converter and executors retrieved from the cluster, the SNP-spacing script, and the final-tree audit. The original project paths are preserved, so paths must be adapted to another installation. Input VCFs, sample lists, third-party software, and inferred trees must be supplied separately.
 
-Read mapping and variant calling are outside the scope of this repository. Raw reads, genotypes, and sampling metadata are not included in this deposit.
+Read mapping and variant calling are outside the scope of this repository. Raw reads and genotypes are not included in this deposit. Sampling metadata are available in Table S1.
+
+## Supplementary materials
+
+- [Figure S1: SVDquartets 10-kb tree, SVG panels A–E](supplementary/README.md#figure-s1).
+- [Table S1: sampling information for the 202 accessions (Excel)](supplementary/Table_S1_Dyckia_sampling.xlsx).
+
+See the [supplementary index and figure legend](supplementary/README.md) for details.
 
 ## Available scripts
 
@@ -112,3 +119,4 @@ bash run_final202.sh /path/to/project/reproduced_final202
 5. Edit `PROJECT` and `RUN` in `audit_final202.py` to match the project and resulting run, supply its expected metadata files, and run the audit.
 
 `run_final202.sh` generates its own `run_ml.sh` and `run_svd.sh` from the templates. The separately deposited `run_svd.sh` records the historical final run and contains that run's absolute directory. The scripts are archival research executors, not a path-independent package.
+
